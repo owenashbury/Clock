@@ -9,6 +9,11 @@ from adafruit_bitmap_font import bitmap_font
 from adafruit_qualia.graphics import Graphics, Displays
 from adafruit_qualia.peripherals import Peripherals
 
+# Screen Libs
+import dotclockframebuffer
+from framebufferio import FramebufferDisplay
+from displayio import release_displays
+
 
 # from abc import ABC, abstractmethod
 class RealTimeClock:
@@ -23,7 +28,9 @@ class RealTimeClock:
 
 class App:
     def __init__(self):
-
+        
+        round21 = Round21()
+        screen = Round21.getScreen()
         i2c = board.STEMMA_I2C()
         peripherals = Peripherals(i2c_bus=i2c)
 
@@ -34,34 +41,16 @@ class App:
         current_time = realTimeClock.get()
         print(current_time)
 
-        # Initialize display (as above)
 
-        screen = Graphics(Displays.ROUND21, default_bg=0x990099)
-        display = screen.display
-
-        # WebPage to show in the QR
-        webpage = "http://www.adafruit.com"
-
-        # QR size Information
-        qr_size = 9  # Pixels
-        scale = 10
-
-        # Create a barcode
-        screen.qrcode(
-        webpage,
-        qr_size=scale,
-        x=(display.width // 2) - ((qr_size + 5) * scale),
-        y=(display.height // 2) - ((qr_size + 4) * scale),
-        )
-
-        while True:
-            if peripherals.button_up:
-                peripherals.backlight = True
-            if peripherals.button_down:
-                peripherals.backlight = False
-            time.sleep(0.1)
-        #clockView = ClockView()
-        #clockView.draw(screen)
+        #while True:
+        #    if peripherals.button_up:
+        #         peripherals.backlight = True
+        #    if peripherals.button_down:
+        #        peripherals.backlight = False
+        #    time.sleep(0.1)
+        
+        clockView = ClockView()
+        clockView.draw(screen)
 
 
 '''
@@ -81,12 +70,81 @@ class Output(ABC):
         pass
 '''
 
+class Round21():
+    def __init__():
+        release_displays()
+        init_sequence_tl021wvc02 = bytes((
+            0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x10,
+            0xc0, 0x02, 0x3b, 0x00,
+            0xc1, 0x02, 0x0b, 0x02,
+            0xc2, 0x02, 0x00, 0x02,
+            0xcc, 0x01, 0x10,
+            0xcd, 0x01, 0x08,
+            0xb0, 0x10, 0x02, 0x13, 0x1b, 0x0d, 0x10, 0x05, 0x08, 0x07, 0x07, 0x24, 0x04, 0x11, 0x0e, 0x2c, 0x33, 0x1d,
+            0xb1, 0x10, 0x05, 0x13, 0x1b, 0x0d, 0x11, 0x05, 0x08, 0x07, 0x07, 0x24, 0x04, 0x11, 0x0e, 0x2c, 0x33, 0x1d,
+            0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x11,
+            0xb0, 0x01, 0x5d,
+            0xb1, 0x01, 0x43,
+            0xb2, 0x01, 0x81,
+            0xb3, 0x01, 0x80,
+            0xb5, 0x01, 0x43,
+            0xb7, 0x01, 0x85,
+            0xb8, 0x01, 0x20,
+            0xc1, 0x01, 0x78,
+            0xc2, 0x01, 0x78,
+            0xd0, 0x01, 0x88,
+            0xe0, 0x03, 0x00, 0x00, 0x02,
+            0xe1, 0x0b, 0x03, 0xa0, 0x00, 0x00, 0x04, 0xa0, 0x00, 0x00, 0x00, 0x20, 0x20,
+            0xe2, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xe3, 0x04, 0x00, 0x00, 0x11, 0x00,
+            0xe4, 0x02, 0x22, 0x00,
+            0xe5, 0x10, 0x05, 0xec, 0xa0, 0xa0, 0x07, 0xee, 0xa0, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xe6, 0x04, 0x00, 0x00, 0x11, 0x00,
+            0xe7, 0x02, 0x22, 0x00,
+            0xe8, 0x10, 0x06, 0xed, 0xa0, 0xa0, 0x08, 0xef, 0xa0, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xeb, 0x07, 0x00, 0x00, 0x40, 0x40, 0x00, 0x00, 0x00,
+            0xed, 0x10, 0xff, 0xff, 0xff, 0xba, 0x0a, 0xbf, 0x45, 0xff, 0xff, 0x54, 0xfb, 0xa0, 0xab, 0xff, 0xff, 0xff,
+            0xef, 0x06, 0x10, 0x0d, 0x04, 0x08, 0x3f, 0x1f,
+            0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x13,
+            0xef, 0x01, 0x08,
+            0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x00,
+            0x36, 0x01, 0x00,
+            0x3a, 0x01, 0x60,
+            0x11, 0x80, 0x64,
+            0x29, 0x80, 0x32,
+        ))
+
+        tft_pins = dict(board.TFT_PINS)
+
+        tft_timings = {
+            "frequency": 16_000_000,
+            "width": 480,
+            "height": 480,
+            "hsync_pulse_width": 20,
+            "hsync_front_porch": 40,
+            "hsync_back_porch": 40,
+            "vsync_pulse_width": 10,
+             "vsync_front_porch": 40,
+            "vsync_back_porch": 40,
+            "hsync_idle_low": False,
+            "vsync_idle_low": False,
+            "de_idle_high": False,
+            "pclk_active_high": True,
+            "pclk_idle_high": False,
+        }
+
+        fb = dotclockframebuffer.DotClockFramebuffer(**tft_pins, **tft_timings)
+        self.screen = FramebufferDisplay(fb, auto_refresh=False)
+
+    def getScreen():
+        return self.screen
+
 class ClockView():
     def draw(self, screen):
         clockView = displayio.Group()
         font = bitmap_font.load_font("/Roboto-Regular-47.pcf")
         text_label = label.Label(font, text="Hello Round Display!", color=0xFF00FF)
-
+        
         clockView.append(text_label)
         screen.root_group = clockView
 
