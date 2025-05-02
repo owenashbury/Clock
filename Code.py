@@ -6,6 +6,7 @@ import displayio
 import vectorio
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
+from adafruit_qualia.graphics import Graphics, Displays
 from adafruit_qualia.peripherals import Peripherals
 
 # Screen Libs
@@ -27,8 +28,9 @@ class RealTimeClock:
 
 class App:
     def __init__(self):
-        roundScr = Round21()
-        screen = roundScr.getScreen()
+        
+        round21 = Round21()
+        screen = Round21.getScreen()
         i2c = board.STEMMA_I2C()
         peripherals = Peripherals(i2c_bus=i2c)
 
@@ -46,7 +48,7 @@ class App:
         #    if peripherals.button_down:
         #        peripherals.backlight = False
         #    time.sleep(0.1)
-
+        
         clockView = ClockView()
         clockView.draw(screen)
 
@@ -68,8 +70,8 @@ class Output(ABC):
         pass
 '''
 
-class Round21:
-    def __init__(self):
+class Round21():
+    def __init__():
         release_displays()
         init_sequence_tl021wvc02 = bytes((
             0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x10,
@@ -134,7 +136,7 @@ class Round21:
         fb = dotclockframebuffer.DotClockFramebuffer(**tft_pins, **tft_timings)
         self.screen = FramebufferDisplay(fb, auto_refresh=False)
 
-    def getScreen(self):
+    def getScreen():
         return self.screen
 
 class ClockView():
@@ -142,7 +144,7 @@ class ClockView():
         clockView = displayio.Group()
         font = bitmap_font.load_font("/Roboto-Regular-47.pcf")
         text_label = label.Label(font, text="Hello Round Display!", color=0xFF00FF)
-
+        
         clockView.append(text_label)
         screen.root_group = clockView
 
