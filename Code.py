@@ -26,20 +26,48 @@ class RealTimeClock:
     def setTime(self):
         pass
 
+    def formatTime(self):
+        time_struct = self.rtc.datetime
+        print(time_struct)  # Fixed parentheses spacing
+
+        hour = time_struct.tm_hour % 12
+        hour = 12 if hour == 0 else hour
+        am_pm = "AM" if time_struct.tm_hour < 12 else "PM"
+        return(f"{hour:02d}:{time_struct.tm_min:02d}:{time_struct.tm_sec:02d} {am_pm}\n")
+
 class App:
     def __init__(self):
-        
+
         round21 = Round21()
-        screen = Round21.getScreen()
+        screen = round21.getScreen()
+
+        clockView = ClockView()
+        clockView.draw(screen)
+
         i2c = board.STEMMA_I2C()
         peripherals = Peripherals(i2c_bus=i2c)
-
         realTimeClock = RealTimeClock(i2c)
-        current_time = realTimeClock.get()
-        print(current_time)
-        time.sleep(2)
-        current_time = realTimeClock.get()
-        print(current_time)
+
+        while True:
+            #Get updated time from RTC
+            current_time = realTimeClock.formatTime()
+
+            # Update display
+            clockView.update_time(current_time)
+            clockView.draw(screen)
+
+            # Refresh rate control
+            time.sleep(1)
+
+
+        #i2c = board.STEMMA_I2C()
+        #peripherals = Peripherals(i2c_bus=i2c)
+        #realTimeClock = RealTimeClock(i2c)
+        #current_time = realTimeClock.get()
+        #print(current_time)
+        #time.sleep(2)
+        #current_time = realTimeClock.get()
+        #print(current_time)
 
 
         #while True:
@@ -48,9 +76,7 @@ class App:
         #    if peripherals.button_down:
         #        peripherals.backlight = False
         #    time.sleep(0.1)
-        
-        clockView = ClockView()
-        clockView.draw(screen)
+
 
 
 '''
@@ -70,8 +96,8 @@ class Output(ABC):
         pass
 '''
 
-class Round21():
-    def __init__():
+class Round21:
+    def __init__(self):
         release_displays()
         init_sequence_tl021wvc02 = bytes((
             0xff, 0x05, 0x77, 0x01, 0x00, 0x00, 0x10,
@@ -114,6 +140,13 @@ class Round21():
             0x29, 0x80, 0x32,
         ))
 
+        board.I2C().deinit()
+        i2c = busio.I2C(board.SCL, board.SDA) #, frequency=400_000)
+        tft_io_expander = dict(board.TFT_IO_EXPANDER)
+        #tft_io_expander['i2c_address'] = 0x38 # uncomment for rev B
+        dotclockframebuffer.ioexpander_send_init_sequence(i2c, init_sequence_tl021wvc02, **tft_io_expander)
+        i2c.deinit()
+
         tft_pins = dict(board.TFT_PINS)
 
         tft_timings = {
@@ -136,16 +169,35 @@ class Round21():
         fb = dotclockframebuffer.DotClockFramebuffer(**tft_pins, **tft_timings)
         self.screen = FramebufferDisplay(fb, auto_refresh=False)
 
-    def getScreen():
+    def getScreen(self):
         return self.screen
 
 class ClockView():
+    def __init__(self):
+        self.view_group = displayio.Group()
+
+        # Load font (make sure the font file path is correct)
+        font = bitmap_font.load_font("/Arial_16.bdf")
+
+        # Create text label
+        self.text_label = label.Label(
+            font,
+            text="Hello World!",
+            color=0xFFFFFF,  # White text
+            anchor_point=(0.5, 0.5),  # Center anchor
+            anchored_position=(240, 240)  # Center of 480x480 display
+        )
+
+        self.view_group.append(self.text_label)
+
+    def update_time(self, current_time):
+        """Update the displayed text with a variable"""
+        self.text_label.text = current_time
+
     def draw(self, screen):
-        clockView = displayio.Group()
-        font = bitmap_font.load_font("/Roboto-Regular-47.pcf")
-        text_label = label.Label(font, text="Hello Round Display!", color=0xFF00FF)
-        
-        clockView.append(text_label)
-        screen.root_group = clockView
+        """Update the display with the current view"""
+        screen.root_group = self.view_group
+        screen.auto_refresh = False
+        screen.refresh()  # Manual refresh since auto_refresh is False
 
 app = App()
