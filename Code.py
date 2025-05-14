@@ -12,6 +12,9 @@ from Components.AD5693R import Speaker
 from Views.Time import TimeView
 from Views.AlarmSet import AlarmSetView
 
+# Import Alarmist
+from Alarmist import Alarmist
+
 class App:
     def __init__(self):
         displayClass = Screen()
@@ -20,6 +23,8 @@ class App:
         clockView.draw(display)
         alarmView = AlarmSetView()
         alarmView.draw(display)
+
+        alarmist = Alarmist()
 
         self.activeView = clockView
 
@@ -38,7 +43,8 @@ class App:
         # Usage example:
         while True:
             time.sleep(1)
-            current_time = rtc.formatTime()
+            current_time_struct = rtc.get()
+            current_time = rtc.formatTime(current_time_struct)
             clockView.update_time(current_time)
             self.activeView.draw(display)
             # Check button state with debouncing

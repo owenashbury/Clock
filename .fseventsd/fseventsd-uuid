@@ -1,1 +1,2 @@
-0F4D7F4B-CDBC-4BDF-B3BF-897B00B538F0
+class Alarmist:
+    def __init__(sel
