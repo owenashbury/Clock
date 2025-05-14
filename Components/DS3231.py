@@ -13,8 +13,6 @@ class RealTimeClock:
 
     def formatTime(self):
         time_struct = self.rtc.datetime
-        print(time_struct)
-
         hour = time_struct.tm_hour % 12
         hour = 12 if hour == 0 else hour
         am_pm = "AM" if time_struct.tm_hour < 12 else "PM"
