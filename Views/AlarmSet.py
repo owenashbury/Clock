@@ -20,3 +20,5 @@ class AlarmSetView:
         screen.root_group = self.view_group
         screen.auto_refresh = False
         screen.refresh()
+
+# minutes_past_midnight = time_struct.tm_hour * 60 + time_struct.tm_min

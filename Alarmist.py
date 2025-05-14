@@ -2,12 +2,12 @@ class Alarmist:
     def __init__(self):
         self.alarms = [660, 630]  # minutes past midnight (these examples are 11:00am and 10:30am)
 
-    def addAlarm(self, time_struct):
-        minutes_past_midnight = time_struct.tm_hour * 60 + time_struct.tm_min
+    def addAlarm(self, minutes_past_midnight):
         if self.doesOverlapAnyAlarm(minutes_past_midnight):
-            print("overlap detected. will not set alarm.")
+            print("overlap detected. will not set alarm for {minutes_past_midnight}.")
         else:
-            self.alarms.append(time)
+            print("adding alarm for {minutes_past_midnight}")
+            self.alarms.append(minutes_past_midnight)
 
     def doesOverlapAnyAlarm(self, newAlarm_minutes_past_midnight):
         # Avoid adding a new alarm within 15 minutes of any existing alarm
@@ -21,6 +21,6 @@ class Alarmist:
         for alarm in self.alarms:
             difference = abs(alarm - newAlarm_minutes_past_midnight)
             if difference < minimum_separation:
-                return true
-        return false
+                return True
+        return False
 

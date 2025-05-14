@@ -40,6 +40,10 @@ class App:
         debounce_time = 0.3
         last_check = time.monotonic()
 
+        # test Alarmist
+        for testAlarm in [ 600, 632, 700, 10]:
+            alarmist.addAlarm(testAlarm)
+
         # Usage example:
         while True:
             time.sleep(1)
