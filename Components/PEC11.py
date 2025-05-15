@@ -10,6 +10,8 @@ class Encoder:
         self.encoder = rotaryio.IncrementalEncoder(seesaw_encoder)
         last_position = None
 
+    def getPosition(self):
+        return self.encoder.position
+
     def getPressed(self):
         return self.encoder_button.value
-

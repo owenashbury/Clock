@@ -40,17 +40,28 @@ class App:
         debounce_time = 0.3
         last_check = time.monotonic()
 
-        # test Alarmist
-        for testAlarm in [ 600, 632, 700, 10]:
-            alarmist.addAlarm(testAlarm)
+        last_position = 0
 
-        # Usage example:
+        # Run Loop
         while True:
             time.sleep(1)
             current_time_struct = rtc.get()
             current_time = rtc.formatTime(current_time_struct)
             clockView.update_time(current_time)
             self.activeView.draw(display)
+
+            # negate the position to make clockwise rotation positive
+            position = -encoder.getPosition()
+
+            if position != last_position:
+                delta = position - last_position
+                last_position = position
+                print("Position: {}".format(position))
+                if self.activeView == alarmView:
+                    alarmView.changeMinutes(delta)
+                    alarmView.draw(display)
+
+
             # Check button state with debouncing
             if time.monotonic() - last_check > debounce_time:
                 current_state = encoder.getPressed()
@@ -59,7 +70,7 @@ class App:
                 # Only trigger on state change
                 if current_state != last_button_state:
                     if current_state:  # Button is pressed (pull-up logic)
-                        #self.activeView = alarmView
+                        self.activeView = alarmView
                         print("button pressed")
                     last_button_state = current_state
 
