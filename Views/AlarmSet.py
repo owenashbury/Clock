@@ -38,6 +38,9 @@ class AlarmSetView:
         print("updated string: "+updatedString)
         return updatedString
 
+    def getMinutes(self):
+        return self.minutes_past_midnight
+
     def changeMinutes(self, minutes_delta):
         print("adding to minutes: "+str(minutes_delta))
         proposedNewMinutes = self.minutes_past_midnight + minutes_delta

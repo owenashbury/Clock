@@ -67,11 +67,19 @@ class App:
                 current_state = encoder.getPressed()
                 last_check = time.monotonic()
 
+
                 # Only trigger on state change
                 if current_state != last_button_state:
                     if current_state:  # Button is pressed (pull-up logic)
-                        self.activeView = alarmView
                         print("button pressed")
+                        if self.activeView == alarmView:
+                            newAlarm = alarmView.getMinutes()
+                            alarmist.addAlarm(newAlarm)
+                            self.activeView = clockView
+                        else:
+                            self.activeView = alarmView
+
+
                     last_button_state = current_state
 
 app = App()
