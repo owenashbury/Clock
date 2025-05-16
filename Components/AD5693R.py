@@ -4,6 +4,7 @@ import busio
 import adafruit_ad569x
 import time
 
+# NOT CURRENTLY IN USE
 class Speaker:
     def __init__(self, i2c):
         # SPDX-FileCopyrightText: 2023 Liz Clark for Adafruit Industries

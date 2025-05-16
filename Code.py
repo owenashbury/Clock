@@ -15,8 +15,11 @@ from Views.AlarmSet import AlarmSetView
 # Import Alarmist
 from Alarmist import Alarmist
 
+# App creates and manages all of the views and components and runs the main loop to display and check inputs.
 class App:
     def __init__(self):
+
+        # create the screens
         displayClass = Screen()
         display = displayClass.getScreen()
         clockView = TimeView()
@@ -24,38 +27,44 @@ class App:
         alarmView = AlarmSetView()
         alarmView.draw(display)
 
+        # create the Alarmist, which manages the alarm setting
         alarmist = Alarmist()
 
+        # start with the clock view active
         self.activeView = clockView
 
+        # open i2c bus to be used to communicate with the components
         i2c = board.STEMMA_I2C()
         peripherals = Peripherals(i2c_bus=i2c)
         rtc = RealTimeClock(i2c)
         speaker = Speaker(i2c)
 
         encoder = Encoder(i2c)
-        encoder_button_held = False
-        # Add simple debounce variables
-        last_button_state = True
-        debounce_time = 0.3
-        last_check = time.monotonic()
+        encoderButtonHeld = False
 
-        last_position = 0
+        # Add debounce to prevent issues with holding down the button
+        lastButtonState = True
+        debounceTime = 0.3
+        lastCheck = time.monotonic()
+
+        lastPosition = 0
 
         # Run Loop
         while True:
-            time.sleep(1)
-            current_time_struct = rtc.get()
-            current_time = rtc.formatTime(current_time_struct)
-            clockView.update_time(current_time)
+            time.sleep(1) # limit the polling rate
+
+            # Update the clock
+            currentTimeStruct = rtc.get()
+            currentTime = rtc.formatTime(currentTimeStruct)
+            clockView.updateTime(currentTime)
             self.activeView.draw(display)
 
-            # negate the position to make clockwise rotation positive
-            position = -encoder.getPosition()
+            # check encoder position (rotation)
+            position = -encoder.getPosition() # negate the position to make clockwise rotation positive
 
-            if position != last_position:
-                delta = position - last_position
-                last_position = position
+            if position != lastPosition:
+                delta = position - lastPosition
+                lastPosition = position
                 print("Position: {}".format(position))
                 if self.activeView == alarmView:
                     alarmView.changeMinutes(delta)
@@ -63,14 +72,14 @@ class App:
 
 
             # Check button state with debouncing
-            if time.monotonic() - last_check > debounce_time:
-                current_state = encoder.getPressed()
-                last_check = time.monotonic()
+            if time.monotonic() - lastCheck > debounceTime:
+                currentState = encoder.getPressed()
+                lastCheck = time.monotonic()
 
 
                 # Only trigger on state change
-                if current_state != last_button_state:
-                    if current_state:  # Button is pressed (pull-up logic)
+                if currentState != lastButtonState:
+                    if currentState:  # Button is pressed (pull-up logic)
                         print("button pressed")
                         if self.activeView == alarmView:
                             newAlarm = alarmView.getMinutes()
@@ -78,8 +87,6 @@ class App:
                             self.activeView = clockView
                         else:
                             self.activeView = alarmView
-
-
-                    last_button_state = current_state
+                    lastButtonState = currentState
 
 app = App()

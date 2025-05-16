@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+# NOT IN USE
 import time
 import board
 from adafruit_pcf8523.pcf8523 import PCF8523

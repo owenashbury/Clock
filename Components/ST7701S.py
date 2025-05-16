@@ -4,7 +4,10 @@ import dotclockframebuffer
 from framebufferio import FramebufferDisplay
 from displayio import release_displays
 
+# Screen initializes the display.
 class Screen:
+
+    # The screen requires an init sequence sent over i2c, then it sets parameters so the screen is ready for use.
     def __init__(self):
         release_displays()
         init_sequence_tl021wvc02 = bytes((
