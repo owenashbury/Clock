@@ -28,3 +28,11 @@ To enter the alarm view press the encoder down to activate the button. You will 
 - It is possible that the hardware could fail in this case you could try to reconnect it or reach out to adafruits support team
 - If the program is crashing because of over use you could introduce a delay in the main loop using sleep(**your delay**)
 - If the program contains a bug feel free to submit a github issue or contact me by email and I will try to resolve it
+
+### Remaining Fixes
+- [ ] Set time with encoder
+- [ ] Alarm
+  - [ ] Icon
+  - [ ] Sound
+  - [ ] Set hour than minutes 
+- [ ] Final Enclosure
