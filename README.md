@@ -16,3 +16,15 @@ The Success criterion for the project are as follows
 - Move the contents of the repository onto the Qualia
 - Optionally install contents of the onboard lib on the board under lib to use only the required library
 
+## User Manual 
+
+### Clock View/Setting the Time
+By default the clock will begin imediately displaying the clock view to set the time use the encoder to pick the correct time 
+
+### Alarm View
+To enter the alarm view press the encoder down to activate the button. You will see a view were you can set an alarm by rotating the encoder. Once you have selected the time you want press the button to set the alarm. This can be repeated if you set an alarm that is in the range of another alarm the alarm will not be set. You can set as many alarms as you want
+
+### Trouble Shooting
+- It is possible that the hardware could fail in this case you could try to reconnect it or reach out to adafruits support team
+- If the program is crashing because of over use you could introduce a delay in the main loop using sleep(**your delay**)
+- If the program contains a bug feel free to submit a github issue or contact me by email and I will try to resolve it
