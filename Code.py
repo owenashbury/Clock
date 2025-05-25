@@ -11,82 +11,122 @@ from Components.AD5693R import Speaker
 # Import View Classes
 from Views.Time import TimeView
 from Views.AlarmSet import AlarmSetView
+from Views.Alarm import AlarmView
+from Views.Set import SetView
 
 # Import Alarmist
 from Alarmist import Alarmist
 
-# App creates and manages all of the views and components and runs the main loop to display and check inputs.
 class App:
     def __init__(self):
-
-        # create the screens
         displayClass = Screen()
         display = displayClass.getScreen()
+        setView = SetView()
         clockView = TimeView()
-        clockView.draw(display)
-        alarmView = AlarmSetView()
-        alarmView.draw(display)
+        alarmSetView = AlarmSetView()
+        alarmView = AlarmView()
 
-        # create the Alarmist, which manages the alarm setting
         alarmist = Alarmist()
 
-        # start with the clock view active
-        self.activeView = clockView
+        activeView = clockView
 
-        # open i2c bus to be used to communicate with the components
         i2c = board.STEMMA_I2C()
         peripherals = Peripherals(i2c_bus=i2c)
         rtc = RealTimeClock(i2c)
+        timeSet = False
+        hoursSet = False
+
         speaker = Speaker(i2c)
 
         encoder = Encoder(i2c)
-        encoderButtonHeld = False
+        lastPos = 0
 
-        # Add debounce to prevent issues with holding down the button
-        lastButtonState = True
-        debounceTime = 0.3
-        lastCheck = time.monotonic()
+        while timeSet == False:
+            button_pressed = encoder.checkButton()
 
-        lastPosition = 0
+            if button_pressed and hoursSet == False:
+                print('Hours Set')
+                hoursSet = True
+                encoder.resetPosition()
+
+            elif button_pressed and hoursSet == True:
+                rtc.setTime(setView.setTime())
+                timeSet = True
+                encoder.resetPosition()
+
+                print('All Set')
+
+            if not hoursSet and encoder.checkRotation() != lastPos:
+                lastPos = encoder.checkRotation()
+                setView.updateHour(lastPos)
+
+            elif hoursSet and encoder.checkRotation() != lastPos:
+                lastPos = encoder.checkRotation()
+                setView.updateMinutes(lastPos)
+
+            setView.draw(display)
+
+        activeView = clockView
 
         # Run Loop
         while True:
-            time.sleep(1) # limit the polling rate
+            button_pressed = encoder.checkButton()
 
-            # Update the clock
-            currentTimeStruct = rtc.get()
-            currentTime = rtc.formatTime(currentTimeStruct)
-            clockView.updateTime(currentTime)
-            self.activeView.draw(display)
+            if activeView == clockView:
+                current_time_struct = rtc.get()
+                current_time = rtc.formatTime(current_time_struct)
+                clockView.update_time(current_time)
 
-            # check encoder position (rotation)
-            position = -encoder.getPosition() # negate the position to make clockwise rotation positive
+            if button_pressed:
+                if activeView == alarmSetView:
+                    # Use App
+                    newAlarm = alarmView.getMinutes()
+                    alarmist.addAlarm(newAlarm)
+                    activeView = clockView
+                    encoder.resetPosition()
 
-            if position != lastPosition:
-                delta = position - lastPosition
-                lastPosition = position
-                print("Position: {}".format(position))
-                if self.activeView == alarmView:
-                    alarmView.changeMinutes(delta)
+                else:
+                    activeView = alarmSetView
+
+            if alarmist.checkAlarms(rtc.get()):
                     alarmView.draw(display)
+                    speaker.buzz()
+                    time.sleep(1)
 
+            if activeView == alarmSetView:
+                # Other initialization
+                self.hoursSet = False
+                self.alarmSet = False
 
-            # Check button state with debouncing
-            if time.monotonic() - lastCheck > debounceTime:
-                currentState = encoder.getPressed()
-                lastCheck = time.monotonic()
+                # Later in your view loop:
+                lastPos = 0
+                while self.alarmSet == False:
+                    button_pressed = encoder.checkButton()
 
+                    if button_pressed and self.hoursSet == False:
+                        print('Hours Set')
+                        self.hoursSet = True
+                        encoder.resetPosition()
 
-                # Only trigger on state change
-                if currentState != lastButtonState:
-                    if currentState:  # Button is pressed (pull-up logic)
-                        print("button pressed")
-                        if self.activeView == alarmView:
-                            newAlarm = alarmView.getMinutes()
-                            alarmist.addAlarm(newAlarm)
-                            self.activeView = clockView
+                    elif button_pressed and self.hoursSet == True:
+                        if alarmist.addAlarm(alarmSetView.getAlarm()):
+                            self.alarmSet = True
+                            encoder.resetPosition()
+                            print('All Set')
+                            activeView = clockView
                         else:
-                            self.activeView = alarmView
-                    lastButtonState = currentState
+                            alarmSetView.overlapDetected()
+
+                    if not self.hoursSet and encoder.checkRotation() != lastPos:
+                        lastPos = encoder.checkRotation()
+                        alarmSetView.updateHour(lastPos)
+
+                    elif self.hoursSet and encoder.checkRotation() != lastPos:
+                        lastPos = encoder.checkRotation()
+                        alarmSetView.updateMinutes(lastPos)
+
+                    alarmSetView.draw(display)
+
+            activeView.draw(display)
 
 app = App()

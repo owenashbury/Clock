@@ -3,57 +3,45 @@ import math
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
 
-# AlarmSetView allows the user to set a new alarm time by turning the encoder rotary
 class AlarmSetView:
-
-    # set up the display
     def __init__(self):
-        self.viewGroup = displayio.Group()
+        self.hour = 0
+        self.minutes = 0
+        self.font = bitmap_font.load_font("/Arial_16.bdf")
+        self.view_group = displayio.Group()
         font = bitmap_font.load_font("/Arial_16.bdf")
 
-        self.minutesPastMidnight = 0
+        self.minutes_past_midnight = 0
 
-        self.textLabel = label.Label(
-            font,
-            text="Set alarm time by rotating the button",
+        self.text_label = label.Label(
+            font = self.font,
+            text = f"Set the Alarm: {self.hour:02d}:{self.minutes:02d}",
             color=0xFFFFFF,
             anchor_point=(0.5, 0.5),
             anchored_position=(240, 240)
         )
 
-        self.timeLabel = label.Label(
-            font,
-            text="00:00",
-            color=0xFFFFFF,
-            anchor_point=(0.5, 0.5),
-            anchored_position=(240, 240 + 50)
-        )
-        self.viewGroup.append(self.timeLabel)
+        self.view_group.append(self.text_label)
 
-    # refresh the screen
+    def updateHour(self, hour):
+        self.hour = hour % 24
+
+    def updateMinutes(self, minutes):
+        self.minutes = minutes % 60
+
+    def getAlarm(self):
+        hours = self.hour * 60
+        minutes = self.minutes
+        minutesPastMidnight = hours + minutes
+        return minutesPastMidnight
+
+    def overlapDetected(self):
+        self.text_label.text = f"Overlap Detected."
+        time.sleep(3)
+
     def draw(self, screen):
-        screen.root_group = self.viewGroup
+        screen.root_group = self.view_group
+        self.text_label.text = f"Set the Alarm: {self.hour:02d}:{self.minutes:02d}"
         screen.refresh()
-
-    # converts the minutesPastMidnight to an HH:MM format for display
-    def stringFromMinutes(self):
-        hours = math.floor(self.minutesPastMidnight / 60)
-        minutes = self.minutesPastMidnight % 60
-        updatedString = str(hours)+":"+str(minutes)
-        print("updated string: "+updatedString)
-        return updatedString
-
-    # let others read the current minutesPastMidnight setting
-    def getMinutes(self):
-        return self.minutesPastMidnight
-
-    # change the current minutesPastMidnight setting
-    def changeMinutes(self, minutesDelta):
-        print("adding to minutes: "+str(minutesDelta))
-        proposedNewMinutes = self.minutesPastMidnight + minutesDelta
-        self.minutesPastMidnight = max(0, proposedNewMinutes) % (24 * 60)
-        print("minutes past midnight is now "+str(self.minutesPastMidnight))
-        self.timeLabel.text = self.stringFromMinutes()
-
 
 
